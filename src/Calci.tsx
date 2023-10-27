@@ -1,8 +1,9 @@
 import { useReducer } from "react";
 
 type CalculatorState = {
-  display: string;
-  result: number | null;
+  currentOperand: string;
+  previousOperand?: string;
+  operation?: string;
 };
 
 type CalculatorAction =
@@ -17,53 +18,114 @@ const calculatorReducer = (
 ): CalculatorState => {
   switch (action.type) {
     case "APPEND_NUMBER":
-      if (action.payload === "0" && state.display === "0") {
+      if (action.payload === "0" && state.currentOperand === "0") {
         return state;
       }
-      if (action.payload === "." && state.display.includes(".")) {
+      if (action.payload === "." && state.currentOperand!.includes(".")) {
         return state;
       }
       return {
         ...state,
-        display:
-          state.display === "0"
+        currentOperand:
+          state.currentOperand === "0"
             ? action.payload
-            : state.display + action.payload,
+            : state.currentOperand + action.payload,
       };
     case "SET_OPERATOR":
-      if (state.display.includes("+")) {
+      if (state.currentOperand == "" && state.previousOperand == "") {
+        return state;
+      }
+      if (state.currentOperand!.includes("+" || "-" || "/" || "*")) {
+        return state;
+      }
+      if (state.currentOperand == "") {
+        return {
+          ...state,
+          operation: action.payload,
+        };
+      }
+      if (state.previousOperand == "") {
+        return {
+          ...state,
+          currentOperand: "",
+          previousOperand: state.currentOperand,
+          operation: action.payload,
+        };
+      }
+      return {
+        ...state,
+        currentOperand: "",
+        operation: action.payload,
+        previousOperand: evaluate(state),
+      };
+    case "CALCULATE_RESULT":
+      if (
+        state.currentOperand == "" ||
+        state.previousOperand == "" ||
+        state.operation == ""
+      ) {
         return state;
       }
       return {
         ...state,
-        display: state.display + action.payload,
-        result: null,
+        currentOperand: evaluate(state),
+        operation: "",
+        previousOperand: "",
       };
-    case "CALCULATE_RESULT":
-      return { display: "", result: null };
     case "CLEAR":
       return {
-        display: "0",
-        result: null,
+        currentOperand: "",
+        previousOperand: "",
+        operation: "",
       };
     default:
       return state;
   }
 };
 
+function evaluate(state: CalculatorState) {
+  const { currentOperand, previousOperand, operation } = state;
+  if (previousOperand == undefined) {
+    return "";
+  }
+  const prev = parseFloat(previousOperand);
+  const current = parseFloat(currentOperand);
+  if (isNaN(prev) && isNaN(current)) {
+    return "";
+  }
+  let computation = 0;
+  switch (operation) {
+    case "+":
+      computation = prev + current;
+      break;
+    case "-":
+      computation = prev - current;
+      break;
+    case "/":
+      computation = prev / current;
+      break;
+    case "*":
+      computation = prev * current;
+      break;
+  }
+  return computation.toString();
+}
+
 function Calci() {
   const [state, dispatch] = useReducer(calculatorReducer, {
-    display: "0",
-    result: null,
+    currentOperand: "",
+    previousOperand: "",
+    operation: "",
   });
 
   return (
     <>
       <div className="output">
         <div className="previous-operand">
-          <h2>{state.display}</h2>
+          {state.previousOperand}
+          {state.operation}
         </div>
-        <div className="current-operand"></div>
+        <div className="current-operand">{state.currentOperand}</div>
       </div>
       <button onClick={() => dispatch({ type: "CLEAR" })}>C</button>
       <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "/" })}>
