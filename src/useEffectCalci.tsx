@@ -124,15 +124,8 @@ function Calci() {
     previousOperand: "",
     operation: "",
   });
-  const { currentOperand, previousOperand, operation } = state;
-
-  const result = useMemo(
-    () => evaluate(state),
-    [currentOperand, previousOperand, operation]
-  );
-  useEffect(() => {
-    console.log("changed");
-  }, [state]);
+  let result = "";
+  useEffect(() => {}, [state]);
 
   return (
     <>
@@ -198,9 +191,7 @@ function Calci() {
       <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "." })}>
         .
       </button>
-      <div>
-        <h2>{result}</h2>
-      </div>
+      <div>{result}</div>
     </>
   );
 }
