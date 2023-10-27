@@ -10,12 +10,13 @@ type CalculatorAction =
   | { type: "APPEND_NUMBER"; payload: string }
   | { type: "SET_OPERATOR"; payload: string }
   | { type: "CALCULATE_RESULT" }
-  | { type: "CLEAR" };
+  | { type: "CLEAR" }
+  | { type: "DELETE" };
 
 const calculatorReducer = (
   state: CalculatorState,
   action: CalculatorAction
-): CalculatorState => {
+) => {
   switch (action.type) {
     case "APPEND_NUMBER":
       if (action.payload === "0" && state.currentOperand === "0") {
@@ -74,9 +75,15 @@ const calculatorReducer = (
       };
     case "CLEAR":
       return {
+        ...state,
         currentOperand: "",
         previousOperand: "",
         operation: "",
+      };
+    case "DELETE":
+      return {
+        ...state,
+        currentOperand: state.currentOperand.slice(0, -1),
       };
     default:
       return state;
@@ -130,7 +137,7 @@ function Calci() {
       <button className="span-two" onClick={() => dispatch({ type: "CLEAR" })}>
         C
       </button>
-      <button>Del</button>
+      <button onClick={() => dispatch({ type: "DELETE" })}>Del</button>
       <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "/" })}>
         /
       </button>
