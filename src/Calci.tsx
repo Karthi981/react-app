@@ -127,7 +127,10 @@ function Calci() {
         </div>
         <div className="current-operand">{state.currentOperand}</div>
       </div>
-      <button onClick={() => dispatch({ type: "CLEAR" })}>C</button>
+      <button className="span-two" onClick={() => dispatch({ type: "CLEAR" })}>
+        C
+      </button>
+      <button>Del</button>
       <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "/" })}>
         /
       </button>
@@ -167,7 +170,12 @@ function Calci() {
       <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "3" })}>
         3
       </button>
-      <button onClick={() => dispatch({ type: "CALCULATE_RESULT" })}>=</button>
+      <button
+        className="span-two"
+        onClick={() => dispatch({ type: "CALCULATE_RESULT" })}
+      >
+        =
+      </button>
       <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "0" })}>
         0
       </button>
