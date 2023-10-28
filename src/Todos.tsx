@@ -13,6 +13,11 @@ const Todos: React.FC = () => {
     items: [],
   });
   const { input, items } = todos;
+
+  const handleForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleClick();
+  };
   const handleClick = () => {
     if (input.trim() !== "") {
       let value: Item[] = [];
@@ -45,29 +50,36 @@ const Todos: React.FC = () => {
     }));
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTodos((prevItems: { input: string; items: Item[] }) => ({
+      ...prevItems,
+      input: e.target.value,
+    }));
+  };
+
   return (
     <div className="main-container">
       <div className="container">
         <div className="row">
           <div className="col-sm p-2">
-            <div className="form-group " style={{ width: 860 }}>
-              <input
-                autoComplete="false"
-                id={todos.input}
-                name={todos.input}
-                placeholder="Add to Do Item"
-                type="text"
-                value={input}
-                className="form-control"
-                onChange={(e) => {
-                  setTodos((prevItems: { input: string; items: Item[] }) => ({
-                    ...prevItems,
-                    input: e.target.value,
-                  }));
-                }}
-                style={{ backgroundColor: "white" }}
-              ></input>
-            </div>
+            <form onSubmit={(e) => handleForm(e)}>
+              <label>
+                Add your To do:
+                <input
+                  autoComplete="false"
+                  id={todos.input}
+                  name={todos.input}
+                  placeholder="Add to Do Item"
+                  type="text"
+                  value={input}
+                  className="form-control"
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
+                  style={{ backgroundColor: "white" }}
+                ></input>
+              </label>
+            </form>
           </div>
           <div className="col-sm p-2">
             <button
