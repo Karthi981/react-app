@@ -1,5 +1,4 @@
 import { useReducer, useEffect, useMemo } from "react";
-import Button from "./components/Button";
 import CalciButton from "./components/CalciButton";
 
 type CalculatorState = {
