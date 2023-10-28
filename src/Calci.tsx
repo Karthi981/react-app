@@ -1,4 +1,6 @@
 import { useReducer, useEffect, useMemo } from "react";
+import Button from "./components/Button";
+import CalciButton from "./components/CalciButton";
 
 type CalculatorState = {
   currentOperand: string;
@@ -120,19 +122,30 @@ function evaluate(state: CalculatorState) {
 
 function Calci() {
   const [state, dispatch] = useReducer(calculatorReducer, {
-    currentOperand: "",
+    currentOperand: "Welcome",
     previousOperand: "",
     operation: "",
   });
   const { currentOperand, previousOperand, operation } = state;
 
-  const result = useMemo(
-    () => evaluate(state),
-    [currentOperand, previousOperand, operation]
-  );
+  const result = useMemo(() => {
+    if (
+      state.currentOperand == "" ||
+      state.previousOperand == "" ||
+      state.operation == ""
+    ) {
+      return state;
+    }
+    return {
+      ...state,
+      currentOperand: evaluate(state),
+      operation: "",
+      previousOperand: "",
+    };
+  }, [currentOperand, previousOperand, operation]);
   useEffect(() => {
-    console.log("changed");
-  }, [state]);
+    state.currentOperand = "";
+  }, []);
 
   return (
     <>
@@ -146,13 +159,18 @@ function Calci() {
       <button className="span-two" onClick={() => dispatch({ type: "CLEAR" })}>
         C
       </button>
-      <button onClick={() => dispatch({ type: "DELETE" })}>Del</button>
-      <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "/" })}>
-        /
-      </button>
-      <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "*" })}>
-        *
-      </button>
+      <CalciButton
+        onClick={() => dispatch({ type: "DELETE" })}
+        digit="DEL"
+      ></CalciButton>
+      <CalciButton
+        onClick={() => dispatch({ type: "SET_OPERATOR", payload: "/" })}
+        digit="/"
+      ></CalciButton>
+      <CalciButton
+        onClick={() => dispatch({ type: "SET_OPERATOR", payload: "*" })}
+        digit="*"
+      ></CalciButton>
       <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "7" })}>
         7
       </button>
@@ -198,9 +216,7 @@ function Calci() {
       <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "." })}>
         .
       </button>
-      <div>
-        <h2>{result}</h2>
-      </div>
+      <h2 className="result span-two">Result= {result.currentOperand}</h2>
     </>
   );
 }

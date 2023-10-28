@@ -53,7 +53,8 @@ const Todos: React.FC = () => {
             <div className="form-group " style={{ width: 860 }}>
               <input
                 autoComplete="false"
-                name="myInput"
+                id={todos.input}
+                name={todos.input}
                 placeholder="Add to Do Item"
                 type="text"
                 value={input}
@@ -93,7 +94,7 @@ const Todos: React.FC = () => {
                       value=""
                       onChange={() => handleCheckboxChange(todo.id)}
                       id={
-                        todo.selected === true
+                        todo.selected == true
                           ? "flexCheckChecked"
                           : "flexCheckDefault"
                       }
