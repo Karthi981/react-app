@@ -23,7 +23,7 @@ const Todos: React.FC = () => {
     e.preventDefault();
     handleClick();
   };
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     console.log("handle clicked");
     if (input.trim() !== "") {
       let value: Item[] = [];
@@ -34,16 +34,19 @@ const Todos: React.FC = () => {
         filteredItems: [...filteredItems, ...value],
       });
     }
-  };
-  const removeTodo = (index: number) => {
-    const updatedTodos = [...items];
-    updatedTodos.splice(index, 1);
-    setTodos((prevItems: { input: string; items: Item[] }) => ({
-      ...prevItems,
-      items: updatedTodos,
-      filteredItems: updatedTodos,
-    }));
-  };
+  }, [items]);
+  const removeTodo = useCallback(
+    (index: number) => {
+      const updatedTodos = [...items];
+      updatedTodos.splice(index, 1);
+      setTodos((prevItems: { input: string; items: Item[] }) => ({
+        ...prevItems,
+        items: updatedTodos,
+        filteredItems: updatedTodos,
+      }));
+    },
+    [items]
+  );
   const onFilter = useCallback(
     (isChange: boolean, ifSelected?: boolean) => {
       if (isChange === true) {
@@ -59,7 +62,7 @@ const Todos: React.FC = () => {
         }));
       }
     },
-    [todos]
+    [filteredItems]
   );
 
   useEffect(() => {
