@@ -89,7 +89,6 @@ const Todos: React.FC = () => {
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      console.log("input changed");
       setTodos(
         (prevItems: {
           input: string;
@@ -101,7 +100,7 @@ const Todos: React.FC = () => {
         })
       );
     },
-    [items]
+    [input]
   );
 
   return (
