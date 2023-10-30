@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import CalciButton from "./components/CalciButton";
 
 type CalculatorState = {
@@ -7,125 +7,111 @@ type CalculatorState = {
   operation?: string;
 };
 
-type CalculatorAction =
-  | { type: "APPEND_NUMBER"; payload: string }
-  | { type: "SET_OPERATOR"; payload: string }
-  | { type: "CALCULATE_RESULT" }
-  | { type: "CLEAR" }
-  | { type: "DELETE" };
+function Calci() {
+  const [state, setState] = useState<CalculatorState>({
+    currentOperand: "Welcome",
+    previousOperand: "Hello",
+    operation: "",
+  });
 
-const calculatorReducer = (
-  state: CalculatorState,
-  action: CalculatorAction
-) => {
-  switch (action.type) {
-    case "APPEND_NUMBER":
-      if (action.payload === "0" && state.currentOperand === "0") {
-        return state;
-      }
-      if (action.payload === "." && state.currentOperand!.includes(".")) {
-        return state;
-      }
-      return {
-        ...state,
-        currentOperand:
-          state.currentOperand === "0"
-            ? action.payload
-            : state.currentOperand + action.payload,
-      };
-    case "SET_OPERATOR":
+  function evaluate(state: CalculatorState) {
+    const { currentOperand, previousOperand, operation } = state;
+    if (previousOperand == undefined) {
+      return "";
+    }
+    const prev = parseFloat(previousOperand);
+    const current = parseFloat(currentOperand);
+    if (isNaN(prev) && isNaN(current)) {
+      return "";
+    }
+    let computation = 0;
+    switch (operation) {
+      case "+":
+        computation = prev + current;
+        break;
+      case "-":
+        computation = prev - current;
+        break;
+      case "/":
+        computation = prev / current;
+        break;
+      case "*":
+        computation = prev * current;
+        break;
+    }
+    return computation.toString();
+  }
+
+  const selectOperator = useCallback(
+    (operand: string) => {
       if (state.currentOperand == "" && state.previousOperand == "") {
-        return state;
-      }
-      if (state.currentOperand!.includes("+" || "-" || "/" || "*")) {
-        return state;
-      }
-      if (state.currentOperand == "") {
-        return {
+        return;
+      } else if (state.currentOperand!.includes("+" || "-" || "/" || "*")) {
+        return;
+      } else if (state.currentOperand == "") {
+        setState({ ...state, operation: operand });
+      } else if (state.previousOperand == "") {
+        setState({
           ...state,
-          operation: action.payload,
-        };
-      }
-      if (state.previousOperand == "") {
-        return {
+          previousOperand: state.currentOperand,
+          currentOperand: "",
+          operation: operand,
+        });
+      } else {
+        setState({
           ...state,
           currentOperand: "",
-          previousOperand: state.currentOperand,
-          operation: action.payload,
-        };
+          operation: operand,
+          previousOperand: evaluate(state),
+        });
       }
-      return {
-        ...state,
-        currentOperand: "",
-        operation: action.payload,
-        previousOperand: evaluate(state),
-      };
-    case "CALCULATE_RESULT":
-      if (
-        state.currentOperand == "" ||
-        state.previousOperand == "" ||
-        state.operation == ""
-      ) {
-        return state;
-      }
-      return {
+    },
+    [state]
+  );
+  const clear = useCallback(() => {
+    setState({
+      ...state,
+      currentOperand: "",
+      previousOperand: "",
+      operation: "",
+    });
+  }, []);
+
+  // Use a callback to delete the last character
+  const deleteCharacter = useCallback(() => {
+    setState({ ...state, currentOperand: state.currentOperand.slice(0, -1) });
+  }, [state.currentOperand]);
+
+  const calculate = useCallback(() => {
+    if (
+      state.currentOperand == "" ||
+      state.previousOperand == "" ||
+      state.operation == ""
+    ) {
+      setState(state);
+    } else {
+      setState({
         ...state,
         currentOperand: evaluate(state),
         operation: "",
         previousOperand: "",
-      };
-    case "CLEAR":
-      return {
-        ...state,
-        currentOperand: "",
-        previousOperand: "",
-        operation: "",
-      };
-    case "DELETE":
-      return {
-        ...state,
-        currentOperand: state.currentOperand.slice(0, -1),
-      };
-    default:
-      return state;
-  }
-};
+      });
+    }
+  }, [evaluate(state)]);
 
-function evaluate(state: CalculatorState) {
-  const { currentOperand, previousOperand, operation } = state;
-  if (previousOperand == undefined) {
-    return "";
-  }
-  const prev = parseFloat(previousOperand);
-  const current = parseFloat(currentOperand);
-  if (isNaN(prev) && isNaN(current)) {
-    return "";
-  }
-  let computation = 0;
-  switch (operation) {
-    case "+":
-      computation = prev + current;
-      break;
-    case "-":
-      computation = prev - current;
-      break;
-    case "/":
-      computation = prev / current;
-      break;
-    case "*":
-      computation = prev * current;
-      break;
-  }
-  return computation.toString();
-}
-
-function Calci() {
-  const [state, dispatch] = useReducer(calculatorReducer, {
-    currentOperand: "Welcome",
-    previousOperand: "",
-    operation: "",
-  });
-  const { currentOperand, previousOperand, operation } = state;
+  const appendNumber = (digit: string) => {
+    if (digit === "0" && state.currentOperand === "0") {
+      return;
+    }
+    if (digit === "." && state.currentOperand!.includes(".")) {
+      return;
+    }
+    setState({
+      ...state,
+      currentOperand:
+        state.currentOperand === "0" ? digit : state.currentOperand + digit,
+    });
+  };
 
   const result = useMemo(() => {
     if (
@@ -141,9 +127,10 @@ function Calci() {
       operation: "",
       previousOperand: "",
     };
-  }, [currentOperand, previousOperand, operation]);
+  }, [state.currentOperand, state.previousOperand, state.operation]);
   useEffect(() => {
     state.currentOperand = "";
+    state.previousOperand = "";
   }, []);
 
   return (
@@ -155,66 +142,28 @@ function Calci() {
         </div>
         <div className="current-operand">{state.currentOperand}</div>
       </div>
-      <button className="span-two" onClick={() => dispatch({ type: "CLEAR" })}>
+      <button className="span-two" onClick={clear}>
         C
       </button>
-      <CalciButton
-        onClick={() => dispatch({ type: "DELETE" })}
-        digit="DEL"
-      ></CalciButton>
-      <CalciButton
-        onClick={() => dispatch({ type: "SET_OPERATOR", payload: "/" })}
-        digit="/"
-      ></CalciButton>
-      <CalciButton
-        onClick={() => dispatch({ type: "SET_OPERATOR", payload: "*" })}
-        digit="*"
-      ></CalciButton>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "7" })}>
-        7
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "8" })}>
-        8
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "9" })}>
-        9
-      </button>
-      <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "-" })}>
-        -
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "4" })}>
-        4
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "5" })}>
-        5
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "6" })}>
-        6
-      </button>
-      <button onClick={() => dispatch({ type: "SET_OPERATOR", payload: "+" })}>
-        +
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "1" })}>
-        1
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "2" })}>
-        2
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "3" })}>
-        3
-      </button>
-      <button
-        className="span-two"
-        onClick={() => dispatch({ type: "CALCULATE_RESULT" })}
-      >
+      <CalciButton onClick={deleteCharacter} digit="DEL"></CalciButton>
+      <CalciButton onClick={() => selectOperator("/")} digit="/"></CalciButton>
+      <CalciButton onClick={() => selectOperator("*")} digit="*"></CalciButton>
+      <button onClick={() => appendNumber("7")}>7</button>
+      <button onClick={() => appendNumber("8")}>8</button>
+      <button onClick={() => appendNumber("9")}>9</button>
+      <button onClick={() => selectOperator("-")}>-</button>
+      <button onClick={() => appendNumber("4")}>4</button>
+      <button onClick={() => appendNumber("5")}>5</button>
+      <button onClick={() => appendNumber("6")}>6</button>
+      <button onClick={() => selectOperator("+")}>+</button>
+      <button onClick={() => appendNumber("1")}>1</button>
+      <button onClick={() => appendNumber("2")}>2</button>
+      <button onClick={() => appendNumber("3")}>3</button>
+      <button className="span-two" onClick={() => calculate}>
         =
       </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "0" })}>
-        0
-      </button>
-      <button onClick={() => dispatch({ type: "APPEND_NUMBER", payload: "." })}>
-        .
-      </button>
+      <button onClick={() => appendNumber("0")}>0</button>
+      <button onClick={() => appendNumber(".")}>.</button>
       <h2 className="result span-two">Result= {result.currentOperand}</h2>
     </>
   );

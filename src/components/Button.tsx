@@ -6,6 +6,7 @@ interface Props {
 }
 
 const Button = ({ children, onClick }: Props) => {
+  console.log("filtering");
   return (
     <button
       type="button"

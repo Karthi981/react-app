@@ -44,21 +44,23 @@ const Todos: React.FC = () => {
       filteredItems: updatedTodos,
     }));
   };
-  const onFilter = (isChange: boolean, ifSelected?: boolean) => {
-    console.log("filtering");
-    if (isChange === true) {
-      const filtered = items.filter((item) => item.selected === ifSelected);
-      setTodos((prevItems: { input: string; items: Item[] }) => ({
-        ...prevItems,
-        filteredItems: filtered,
-      }));
-    } else {
-      setTodos((prevItems: { input: string; items: Item[] }) => ({
-        ...prevItems,
-        filteredItems: items,
-      }));
-    }
-  };
+  const onFilter = useCallback(
+    (isChange: boolean, ifSelected?: boolean) => {
+      if (isChange === true) {
+        const filtered = items.filter((item) => item.selected === ifSelected);
+        setTodos((prevItems: { input: string; items: Item[] }) => ({
+          ...prevItems,
+          filteredItems: filtered,
+        }));
+      } else {
+        setTodos((prevItems: { input: string; items: Item[] }) => ({
+          ...prevItems,
+          filteredItems: items,
+        }));
+      }
+    },
+    [todos]
+  );
 
   useEffect(() => {
     setTodos((prevItems: { input: string; items: Item[] }) => ({

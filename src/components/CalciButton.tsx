@@ -4,6 +4,8 @@ interface Props {
 }
 
 function CalciButton({ digit, onClick }: Props) {
+  // console.log("rendering");
+
   return <button onClick={onClick}>{digit}</button>;
 }
 
