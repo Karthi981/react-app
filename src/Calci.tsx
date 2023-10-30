@@ -82,23 +82,6 @@ function Calci() {
     setState({ ...state, currentOperand: state.currentOperand.slice(0, -1) });
   }, [state.currentOperand]);
 
-  const calculate = useCallback(() => {
-    if (
-      state.currentOperand == "" ||
-      state.previousOperand == "" ||
-      state.operation == ""
-    ) {
-      setState(state);
-    } else {
-      setState({
-        ...state,
-        currentOperand: evaluate(state),
-        operation: "",
-        previousOperand: "",
-      });
-    }
-  }, [evaluate(state)]);
-
   const appendNumber = (digit: string) => {
     if (digit === "0" && state.currentOperand === "0") {
       return;
@@ -113,20 +96,20 @@ function Calci() {
     });
   };
 
-  const result = useMemo(() => {
+  useMemo(() => {
     if (
       state.currentOperand == "" ||
       state.previousOperand == "" ||
       state.operation == ""
     ) {
-      return state;
+      return;
     }
-    return {
+    setState({
       ...state,
       currentOperand: evaluate(state),
       operation: "",
-      previousOperand: "",
-    };
+      previousOperand: state.currentOperand,
+    });
   }, [state.currentOperand, state.previousOperand, state.operation]);
   useEffect(() => {
     state.currentOperand = "";
@@ -159,12 +142,9 @@ function Calci() {
       <button onClick={() => appendNumber("1")}>1</button>
       <button onClick={() => appendNumber("2")}>2</button>
       <button onClick={() => appendNumber("3")}>3</button>
-      <button className="span-two" onClick={() => calculate}>
-        =
-      </button>
+      <button className="span-two">=</button>
       <button onClick={() => appendNumber("0")}>0</button>
       <button onClick={() => appendNumber(".")}>.</button>
-      <h2 className="result span-two">Result= {result.currentOperand}</h2>
     </>
   );
 }
