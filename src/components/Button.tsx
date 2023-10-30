@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface Props {
   children: string;
   onClick?: () => void;
@@ -16,4 +18,4 @@ const Button = ({ children, onClick }: Props) => {
   );
 };
 
-export default Button;
+export default memo(Button);

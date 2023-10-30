@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Button from "./components/Button";
 
 interface Item {
@@ -24,6 +24,7 @@ const Todos: React.FC = () => {
     handleClick();
   };
   const handleClick = () => {
+    console.log("handle clicked");
     if (input.trim() !== "") {
       let value: Item[] = [];
       value.push({ id: Date.now(), text: input, selected: false });
@@ -43,9 +44,10 @@ const Todos: React.FC = () => {
       filteredItems: updatedTodos,
     }));
   };
-  const onFilter = (isChange: boolean, ifselected?: boolean) => {
+  const onFilter = (isChange: boolean, ifSelected?: boolean) => {
+    console.log("filtering");
     if (isChange === true) {
-      const filtered = items.filter((item) => item.selected === ifselected);
+      const filtered = items.filter((item) => item.selected === ifSelected);
       setTodos((prevItems: { input: string; items: Item[] }) => ({
         ...prevItems,
         filteredItems: filtered,
@@ -65,25 +67,37 @@ const Todos: React.FC = () => {
     }));
   }, [items]);
 
-  const handleCheckboxChange = (id: number) => {
-    let selectedItem: Item[] = items.map((item) =>
-      item.id === id ? { ...item, selected: !item.selected } : item
-    );
-    setTodos((prevItems: { input: string; items: Item[] }) => ({
-      ...prevItems,
-      items: selectedItem,
-      filteredItems: selectedItem,
-    }));
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTodos(
-      (prevItems: { input: string; items: Item[]; filteredItems: Item[] }) => ({
+  const handleCheckboxChange = useCallback(
+    (id: number) => {
+      console.log("checkbox item changed");
+      let selectedItem: Item[] = items.map((item) =>
+        item.id === id ? { ...item, selected: !item.selected } : item
+      );
+      setTodos((prevItems: { input: string; items: Item[] }) => ({
         ...prevItems,
-        input: e.target.value,
-      })
-    );
-  };
+        items: selectedItem,
+        filteredItems: selectedItem,
+      }));
+    },
+    [items]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      console.log("input changed");
+      setTodos(
+        (prevItems: {
+          input: string;
+          items: Item[];
+          filteredItems: Item[];
+        }) => ({
+          ...prevItems,
+          input: e.target.value,
+        })
+      );
+    },
+    [items]
+  );
 
   return (
     <div className="main-container">
