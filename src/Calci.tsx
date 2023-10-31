@@ -5,13 +5,15 @@ type CalculatorState = {
   currentOperand: string;
   previousOperand?: string;
   operation?: string;
+  memory?: string;
 };
 
 function Calci() {
   const [state, setState] = useState<CalculatorState>({
     currentOperand: "Welcome",
-    previousOperand: "Hello",
+    previousOperand: "",
     operation: "",
+    memory: "",
   });
 
   function evaluate(state: CalculatorState) {
@@ -56,6 +58,7 @@ function Calci() {
           previousOperand: state.currentOperand,
           currentOperand: "",
           operation: operand,
+          memory: "",
         });
       } else {
         setState({
@@ -63,6 +66,7 @@ function Calci() {
           currentOperand: "",
           operation: operand,
           previousOperand: evaluate(state),
+          memory: "",
         });
       }
     },
@@ -74,27 +78,30 @@ function Calci() {
       currentOperand: "",
       previousOperand: "",
       operation: "",
+      memory: "",
     });
   }, []);
 
-  // Use a callback to delete the last character
   const deleteCharacter = useCallback(() => {
     setState({ ...state, currentOperand: state.currentOperand.slice(0, -1) });
   }, [state.currentOperand]);
 
-  const appendNumber = (digit: string) => {
-    if (digit === "0" && state.currentOperand === "0") {
-      return;
-    }
-    if (digit === "." && state.currentOperand!.includes(".")) {
-      return;
-    }
-    setState({
-      ...state,
-      currentOperand:
-        state.currentOperand === "0" ? digit : state.currentOperand + digit,
-    });
-  };
+  const appendNumber = useCallback(
+    (digit: string) => {
+      if (digit === "0" && state.currentOperand === "0") {
+        return;
+      }
+      if (digit === "." && state.currentOperand!.includes(".")) {
+        return;
+      }
+      setState({
+        ...state,
+        currentOperand:
+          state.currentOperand === "0" ? digit : state.currentOperand + digit,
+      });
+    },
+    [state.currentOperand]
+  );
 
   useMemo(() => {
     if (
@@ -108,7 +115,8 @@ function Calci() {
       ...state,
       currentOperand: evaluate(state),
       operation: "",
-      previousOperand: state.currentOperand,
+      previousOperand: "",
+      memory: state.previousOperand + state.operation! + state.currentOperand,
     });
   }, [state.currentOperand, state.previousOperand, state.operation]);
   useEffect(() => {
@@ -120,8 +128,9 @@ function Calci() {
     <>
       <div className="output">
         <div className="previous-operand">
-          {state.previousOperand}
-          {state.operation}
+          {state.memory != "" && state.memory}
+          {state.previousOperand != "" && state.previousOperand}
+          {state.operation != "" && state.operation}
         </div>
         <div className="current-operand">{state.currentOperand}</div>
       </div>
